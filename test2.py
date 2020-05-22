@@ -27,15 +27,15 @@ test_load = torch.utils.data.DataLoader(
 class Net(nn.Module):#细节 这class是小写
     def __init__(self):
         super().__init__()#细节 这没有冒号
-        self.conv1 = nn.Conv2d(1,6,3,padding=1) #输入单通道图片(1,32,32 1batch_size  (1,1,32,32)
+        self.conv1 = nn.Conv2d(1,6,3,padding=1) #输入单通道图片(1,32,32) 1batch_size  (1,1,32,32)
         self.conv2 = nn.Conv2d(6,10,3,padding=1)
         self.conv3 = nn.Conv2d(10,6,3,padding=1)
         self.conv4 = nn.Conv2d(6,3,3,padding=1)
         self.fc1 = nn.Linear(3*28*28,500) #细节 这参数输入元素数，不用加batch batch输入的时候加
         self.fc2 = nn.Linear(500,100)
-        self.fc3 = nn.Linear(100,1)
+        self.fc3 = nn.Linear(100,10)
         self.relu = nn.ReLU()
-        self.softmax = nn.Softmax()
+        self.softmax = nn.Softmax(dim=1)
 
     def forward(self,x):
         model1 = nn.Sequential(self.conv1,self.relu,self.conv2,self.relu,
@@ -44,21 +44,19 @@ class Net(nn.Module):#细节 这class是小写
         x = model1(x)
         x = x.view(BATCH_SIZE,-1)
         x = model2(x)
-        x = self.softmax(x)
-        return x
+        y = self.softmax(x)
+        return y
 net = Net()
 optimizer = optim.SGD(net.parameters(),lr=0.01)
-citizerion = nn.L1Loss()
+citizerion = nn.CrossEntropyLoss()
 
 # for i,(img,target) in enumerate(train_load):
 #     print(i,img.shape,target.shape)
 
 for i in range(EPOCH):
     for j,(img,y) in enumerate(train_load):
+
         output = net(img)
-
-        y = y.view(32,-1).float()
-
 
         loss = citizerion(output,y)
         loss.backward()
@@ -66,5 +64,5 @@ for i in range(EPOCH):
 
         if j%32 ==0:
             print(j)
-            print("loss = .4f"%loss)
+            print("loss = %.4f"%loss)
     torch.save("epoch{}".format(i+1))
