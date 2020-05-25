@@ -12,9 +12,9 @@ test_load = torch.utils.data.DataLoader(
     shuffle = True
 )
 
-net = net.Net(32)
+net = net.Net()
 
-checkpoint = torch.load("epoch8",map_location=torch.device('cpu'))
+checkpoint = torch.load("epoch10",map_location=torch.device('cpu'))
 
 net.load_state_dict(checkpoint['net'])
 
@@ -24,4 +24,4 @@ for i,(img,target) in enumerate(test_load):
     output = net(img)
     _,predict = torch.max(output,1)
     correct += (predict==target).sum().item()
-print(correct/len(test_load))
+print(correct/len(test_load.dataset))

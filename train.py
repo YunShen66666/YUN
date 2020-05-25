@@ -5,7 +5,7 @@ import torch.optim as optim
 from torchvision import datasets,transforms
 import net
 
-BATCH_SIZE = 32
+BATCH_SIZE = 512
 EPOCH = 10
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else "cpu")
 
@@ -14,13 +14,13 @@ transforms_train = transforms.Compose([
                             transforms.Normalize((0.1307,), (0.3081,))])
 
 train_load = torch.utils.data.DataLoader(
-    datasets.MNIST('data',train=True,transform=transforms_train),
+    datasets.MNIST('data',download=True,train=True,transform=transforms_train),
     batch_size = BATCH_SIZE,
     shuffle = True
 )
-net = net.Net(BATCH_SIZE)
-optimizer = optim.SGD(net.parameters(),lr=0.01)
-citizerion = nn.L1Loss()
+net = net.Net().to(DEVICE)
+optimizer = optim.SGD(net.parameters(),lr=0.001)
+citizerion = nn.CrossEntropyLoss()
 def train():
     for i in range(EPOCH):
         for j, (img, y) in enumerate(train_load):
@@ -28,15 +28,14 @@ def train():
             y = y.to(DEVICE)
             output = net(img)
 
-            y = y.view(32, -1).float()
 
             loss = citizerion(output, y)
             loss.backward()
             optimizer.step()
 
-            if j % 32 == 0:
-                print(j)
-                print("loss = %.4f" % loss)
-        torch.save("epoch{}".format(i + 1))
+            if j % 30 == 0:
+                print("epoch:{},batch:{},loss={:.4f}".format(i,j,loss.item()))
+    state = {'net':net.state_dict()}
+    torch.save(state,"epoch10")
 
 train()
